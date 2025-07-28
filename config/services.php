@@ -35,4 +35,17 @@ return [
         ],
     ],
 
+    'newsapi' => [
+        'key' => env('NEWSAPI_KEY'),
+        'url' => 'https://newsapi.org/v2',
+    ],
+    'opennews' => [
+        'key' => env('OPENNEWS_KEY'),
+        'url' => 'https://api.opennews.org',
+    ],
+    'guardian' => [
+        'key' => env('GUARDIAN_API_KEY'),
+        'url' => 'https://content.guardianapis.com',    
+    ],
+
 ];

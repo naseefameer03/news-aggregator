@@ -1,0 +1,45 @@
+<?php
+
+namespace App\Services;
+
+use App\Services\Contracts\NewsSourceInterface;
+use Illuminate\Support\Facades\Http;
+
+class TheGuardianAPIService implements NewsSourceInterface
+{
+    protected string $baseUrl;
+    protected string $apiKey;
+
+    public function __construct()
+    {
+        $this->baseUrl = config('services.guardian.url');
+        $this->apiKey  = config('services.guardian.key');
+    }
+
+    public function fetchArticles(): array
+    {
+        $response = Http::get("{$this->baseUrl}/search", [
+            'apiKey' => $this->apiKey,
+            'page-size' => 20,
+            'order-by' => 'newest'
+        ]);
+
+        if (!$response->successful()) {
+            return [];
+        }
+
+        return collect($response->json('results'))->map(function ($item) {
+            return [
+                'title'        => $item['title'] ?? null,
+                'description'  => $item['description'] ?? null,
+                'content'      => $item['content'] ?? null,
+                'author'       => $item['author'] ?? 'Unknown',
+                'source'       => $item['source']['name'] ?? 'NewsAPI',
+                'category'     => null, // Optional, if available
+                'url'          => $item['url'] ?? null,
+                'image_url'    => $item['urlToImage'] ?? null,
+                'published_at' => $item['publishedAt'] ?? now(),
+            ];
+        })->toArray();
+    }
+}
