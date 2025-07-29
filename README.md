@@ -1,61 +1,145 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 📚 Laravel News Aggregator
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A scalable Laravel 12 application that **aggregates articles** from multiple external news APIs (e.g., NewsAPI, NYTimes), stores them locally, and exposes **RESTful API endpoints** for filtered, paginated article access.
 
-## About Laravel
+Built with a focus on **clean architecture**, **SOLID principles**, and **DRY coding practices**.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 🚀 Features
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- ✅ Fetch articles from NewsAPI, NYTimes and The Guardian
+- ✅ Scheduled background jobs to keep data updated
+- ✅ Search and filter articles via REST API
+- ✅ Extensible service-based architecture
+- ✅ Uses Laravel Queues, HTTP client, and Scheduling
+- ✅ Follows SOLID & DRY best practices
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## 🏗️ Architecture Overview
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+```
+app/
+├── Console/Commands/FetchArticlesCommand.php   # Triggers article fetch job
+├── Jobs/FetchArticlesJob.php                   # Fetches and stores articles
+├── Services/                                   # API integrations
+│   ├── Contracts/NewsSourceInterface.php
+│   ├── NewsAPIService.php
+│   └── NYTimesService.php
+│   └── TheGuardianAPIService.php
+├── Repositories/ArticleRepository.php          # Handles article persistence
+├── Http/Controllers/Api/ArticleController.php  # API endpoints
+├── Http/Requests/SearchArticlesRequest.php     # Validates filters
+├── Http/Resources/ArticleResource.php          # Transforms response data
+└── Models/Article.php                          # Article model
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## 📦 Installation
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```bash
+git clone https://github.com/naseefameer03/news-aggregator.git
+cd news-aggregator
+composer install
+cp .env.example .env
+php artisan key:generate
+```
 
-### Premium Partners
+---
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## 🔧 Configuration
 
-## Contributing
+### 1. Database
+Edit your `.env`:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```
+DB_DATABASE=your_db
+DB_USERNAME=your_user
+DB_PASSWORD=your_password
+```
 
-## Code of Conduct
+### 2. External APIs
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Add these to `.env`:
 
-## Security Vulnerabilities
+```
+NEWSAPI_KEY=your_newsapi_key
+NYTIMES_API_KEY=your_nytimes_key
+GUARDIAN_API_KEY=your_guardian_api_key
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## 🛠️ Migrate Database
 
-## License
+```bash
+php artisan migrate
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+
+## ⏱️ Schedule Article Fetching
+
+To run the scheduler:
+
+```bash
+php artisan schedule:work
+```
+
+You can also trigger manually:
+
+```bash
+php artisan articles:fetch
+```
+
+---
+
+## 🔍 API Endpoints
+
+| Method | URI           | Description                          |
+|--------|---------------|--------------------------------------|
+| GET    | /api/articles | Search & filter news articles        |
+
+### 🔎 Query Parameters
+
+- `q` - Search by title
+- `source` - Filter by source
+- `category` - Filter by category
+- `author` - Filter by author
+
+---
+
+## 📤 Example Response
+
+```json
+{
+  "data": [
+    {
+      "id": "9f81491a-758d-4d77-9cbe-1476ec4bafc7",
+      "title": "Breaking News",
+      "content": "Breaking news content",
+      "source": "NYTimes",
+      "category": "World",
+      "author": "John Doe",
+      "url": "https://example.com/9f81491a-758d-4d77-9cbe-1476ec4bafc7"
+      "published_at": "2025-07-29T10:00:00Z"
+    }
+  ],
+  "meta": {
+    "current_page": 1,
+    "total": 25
+  }
+}
+```
+
+---
+
+## 📄 License
+
+This project is open-source and available under the [MIT license](LICENSE).
+
+---
+
+## ✨ Contributing
+
+Pull requests are welcome! Please ensure code quality and formatting follow Laravel conventions.
