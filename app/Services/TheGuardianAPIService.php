@@ -19,9 +19,10 @@ class TheGuardianAPIService implements NewsSourceInterface
     public function fetchArticles(): array
     {
         $response = Http::get("{$this->baseUrl}/search", [
-            'apiKey' => $this->apiKey,
-            'page-size' => 20,
-            'order-by' => 'newest'
+            'api-key' => $this->apiKey,
+            'show-fields' => 'bodyText,byline',
+            'page-size' => 10,
+            'order-by' => 'newest',
         ]);
 
         if (!$response->successful()) {
@@ -30,15 +31,14 @@ class TheGuardianAPIService implements NewsSourceInterface
 
         return collect($response->json('results'))->map(function ($item) {
             return [
-                'title'        => $item['title'] ?? null,
-                'description'  => $item['description'] ?? null,
-                'content'      => $item['content'] ?? null,
-                'author'       => $item['author'] ?? 'Unknown',
-                'source'       => $item['source']['name'] ?? 'NewsAPI',
-                'category'     => null, // Optional, if available
-                'url'          => $item['url'] ?? null,
-                'image_url'    => $item['urlToImage'] ?? null,
-                'published_at' => $item['publishedAt'] ?? now(),
+                'title'        => $item['webTitle'] ?? null,
+                'content'      => \Illuminate\Support\Str::limit(strip_tags($item['fields']['bodyText'] ?? ''), 250),
+                'source'       => $item['publication'] ?? 'The Guardian',
+                'category'     => $item['sectionName'] ?? null,
+                'author'       => $item['fields']['byline'] ?? 'Unknown',
+                'url'          => $item['webUrl'] ?? null,
+                'published_at' => isset($item['webPublicationDate']) ? date('Y-m-d H:i:s', strtotime($item['webPublicationDate'])) : now(),
+                'api_source'   => 'The Guardian',
             ];
         })->toArray();
     }

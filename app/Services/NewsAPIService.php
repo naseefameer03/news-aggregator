@@ -21,7 +21,7 @@ class NewsAPIService implements NewsSourceInterface
         $response = Http::get("{$this->baseUrl}/top-headlines", [
             'apiKey' => $this->apiKey,
             'country' => 'us',
-            'pageSize' => 20,
+            'pageSize' => 10,
         ]);
 
         if (!$response->successful()) {
@@ -31,14 +31,13 @@ class NewsAPIService implements NewsSourceInterface
         return collect($response->json('articles'))->map(function ($item) {
             return [
                 'title'        => $item['title'] ?? null,
-                'description'  => $item['description'] ?? null,
-                'content'      => $item['content'] ?? null,
-                'author'       => $item['author'] ?? 'Unknown',
+                'content'      => $item['description'] ?? null,
                 'source'       => $item['source']['name'] ?? 'NewsAPI',
-                'category'     => null, // Optional, if available
+                'category'     => NULL,
+                'author'       => $item['author'] ?? 'Unknown',
                 'url'          => $item['url'] ?? null,
-                'image_url'    => $item['urlToImage'] ?? null,
-                'published_at' => $item['publishedAt'] ?? now(),
+                'published_at' => isset($item['publishedAt']) ? date('Y-m-d H:i:s', strtotime($item['publishedAt'])) : now(),
+                'api_source'   => 'NewsAPI',
             ];
         })->toArray();
     }
