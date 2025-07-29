@@ -29,7 +29,7 @@ class TheGuardianAPIService implements NewsSourceInterface
             return [];
         }
 
-        return collect($response->json('results'))->map(function ($item) {
+        return collect($response->json('response.results'))->map(function ($item) {
             return [
                 'title'        => $item['webTitle'] ?? null,
                 'content'      => \Illuminate\Support\Str::limit(strip_tags($item['fields']['bodyText'] ?? ''), 250),

@@ -22,7 +22,7 @@ class ArticleResource extends JsonResource
             'category'     => $this->category,
             'author'       => $this->author,
             'url'          => $this->url,
-            'published_at' => $this->published_at ? $this->published_at->toIso8601String() : null,
+            'published_at' => $this->published_at ? \Carbon\Carbon::parse($this->published_at)->toIso8601String() : null,
         ];
     }
 }

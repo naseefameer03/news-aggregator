@@ -21,9 +21,7 @@ class NYTimesService implements NewsSourceInterface
         $endpoint = "{$this->baseUrl}/home.json";
 
         $response = Http::get($endpoint, [
-            'api-key' => $this->apiKey,
-            'limit'   => 10,
-            'order'   => 'newest',
+            'api-key' => $this->apiKey
         ]);
 
         if (!$response->successful()) {
@@ -31,6 +29,7 @@ class NYTimesService implements NewsSourceInterface
         }
 
         $articles = $response->json('results');
+        $articles = array_slice($articles, 0, 10);
 
         return collect($articles)->map(function ($item) {
             return [
@@ -40,7 +39,7 @@ class NYTimesService implements NewsSourceInterface
                 'category'     => $item['section'] ?? null,
                 'author'       => $item['byline'] ?? 'Unknown',
                 'url'          => $item['url'] ?? null,
-                'published_at' => $item['published_date'] ?? now(),
+                'published_at' => isset($item['published_date']) ? date('Y-m-d H:i:s', strtotime($item['published_date'])) : now(),
                 'api_source'   => 'NYTimes',
             ];
         })->toArray();
