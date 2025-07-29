@@ -14,7 +14,8 @@ class Article extends Model
         'category',
         'author',
         'url',
-        'published_at'
+        'published_at',
+        'api_source'
     ];
 
     protected static function boot()
