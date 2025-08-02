@@ -17,7 +17,7 @@ class ArticleController extends Controller
             ->when($request->input('author'), fn($q) => $q->where('author', $request->author))
             ->when($request->input('q'), fn($q) => $q->where('title', 'like', "%{$request->q}%"))
             ->orderBy('published_at', 'desc')
-            ->paginate(10);
+            ->paginate(9);
 
         return ArticleResource::collection($articles);
     }
