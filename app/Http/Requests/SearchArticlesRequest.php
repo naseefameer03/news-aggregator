@@ -22,10 +22,11 @@ class SearchArticlesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'q'         => 'nullable|string|max:255',
+            'title'     => 'nullable|string|max:255',
             'source'    => 'nullable|string|max:100',
             'category'  => 'nullable|string|max:100',
-            'author'    => 'nullable|string|max:100'
+            'author'    => 'nullable|string|max:100',
+            'date'      => 'nullable|date',
         ];
     }
 }

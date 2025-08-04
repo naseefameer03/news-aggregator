@@ -5,37 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>News Articles</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #f4f4f4;
-        }
-        .news-card {
-            border: none;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease-in-out;
-        }
-        .news-card:hover {
-            transform: translateY(-5px);
-        }
-        .news-title {
-            font-size: 1.25rem;
-            font-weight: bold;
-        }
-        .news-meta {
-            font-size: 0.9rem;
-            color: #888;
-        }
-        .search-box {
-            border-radius: 12px;
-            padding: 10px 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            border: 1px solid #ccc;
-        }
-        .pagination {
-            justify-content: center;
-        }
-    </style>
+    <link href="/css/news-filters.css" rel="stylesheet">
 </head>
 <body>
     <div class="container py-5">
@@ -43,23 +13,29 @@
 
 
         <form id="filterForm" class="row mb-4 g-3 align-items-end justify-content-center">
-            <div class="col-md-3">
+            <div class="col-lg-2 col-md-6 col-12 mb-2 mb-lg-0">
+                <label for="titleInput" class="form-label mb-1">Title</label>
                 <input type="text" id="titleInput" class="form-control search-box" placeholder="Search by title...">
             </div>
-            <div class="col-md-2">
+            <div class="col-lg-2 col-md-6 col-12 mb-2 mb-lg-0">
+                <label for="authorInput" class="form-label mb-1">Author</label>
                 <input type="text" id="authorInput" class="form-control search-box" placeholder="Author">
             </div>
-            <div class="col-md-2">
+            <div class="col-lg-2 col-md-6 col-12 mb-2 mb-lg-0">
+                <label for="sourceInput" class="form-label mb-1">Source</label>
                 <input type="text" id="sourceInput" class="form-control search-box" placeholder="Source">
             </div>
-            <div class="col-md-2">
+            <div class="col-lg-2 col-md-6 col-12 mb-2 mb-lg-0">
+                <label for="categoryInput" class="form-label mb-1">Category</label>
                 <input type="text" id="categoryInput" class="form-control search-box" placeholder="Category">
             </div>
-            <div class="col-md-2">
+            <div class="col-lg-2 col-md-6 col-12 mb-2 mb-lg-0">
+                <label for="dateInput" class="form-label mb-1">Date</label>
                 <input type="date" id="dateInput" class="form-control search-box" placeholder="Date">
             </div>
-            <div class="col-md-1">
-                <button type="submit" class="btn btn-primary w-100">Filter</button>
+            <div class="col-lg-2 col-md-6 col-12 d-flex gap-2 mb-2 mb-lg-0">
+                <button type="submit" class="btn btn-primary flex-fill">Filter</button>
+                <button type="button" id="resetFilters" class="btn btn-secondary flex-fill">Reset</button>
             </div>
         </form>
 
@@ -67,11 +43,15 @@
             <!-- Articles will be rendered here -->
         </div>
 
-        <nav>
-            <ul class="pagination mt-4" id="pagination">
-                <!-- Pagination will be rendered here -->
-            </ul>
-        </nav>
+        <div class="row mt-4">
+            <div class="col-12">
+                <nav class="d-flex justify-content-center">
+                    <ul class="pagination custom-pagination" id="pagination">
+                        <!-- Pagination will be rendered here -->
+                    </ul>
+                </nav>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -123,23 +103,30 @@
             container.innerHTML = '';
 
             if (!articles || articles.length === 0) {
-                container.innerHTML = '<div class="col-12 text-center">No articles found.</div>';
+                container.innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <img src="https://cdn-icons-png.flaticon.com/512/6134/6134065.png" alt="No articles found" style="width:90px;opacity:0.7;">
+                        <div class="mt-3 fs-5 fw-semibold text-secondary">No articles found</div>
+                    </div>
+                `;
                 return;
             }
 
             articles.forEach(article => {
-                const card = document.createElement('div');
-                card.className = 'col-md-4 mb-4';
-                card.innerHTML = `
-                    <div class="card news-card h-100">
-                        <div class="card-body">
-                            <div class="news-title">${article.title}</div>
+            const card = document.createElement('div');
+            card.className = 'col-lg-4 col-md-6 col-12 mb-4';
+            card.innerHTML = `
+                <a href="${article.url}" target="_blank" rel="noopener" class="text-decoration-none text-reset">
+                    <div class="card news-card h-100 hover-shadow">
+                        <div class="card-body pt-3">
+                            <div class="news-title" style="color:#23272b;">${article.title}</div>
                             <p class="news-meta">By ${article.author || 'Unknown'} | ${article.category || 'General'} | ${article.source || 'Unknown'}</p>
                             <p>${article.content?.slice(0, 120) || 'No description available...'}...</p>
                         </div>
                     </div>
-                `;
-                container.appendChild(card);
+                </a>
+            `;
+            container.appendChild(card);
             });
         }
 
@@ -155,7 +142,7 @@
                 li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
                 li.addEventListener('click', (e) => {
                     e.preventDefault();
-                    fetchArticles(currentQuery, i);
+                    fetchArticles(i);
                 });
                 pagination.appendChild(li);
             }
@@ -166,10 +153,14 @@
             fetchArticles(1);
         });
 
-        // Optional: allow instant filtering on input change (uncomment if desired)
-        // ['titleInput','authorInput','sourceInput','categoryInput','dateInput'].forEach(id => {
-        //     document.getElementById(id).addEventListener('input', () => fetchArticles(1));
-        // });
+        document.getElementById('resetFilters').addEventListener('click', function() {
+            document.getElementById('titleInput').value = '';
+            document.getElementById('authorInput').value = '';
+            document.getElementById('sourceInput').value = '';
+            document.getElementById('categoryInput').value = '';
+            document.getElementById('dateInput').value = '';
+            fetchArticles(1);
+        });
 
         // Initial fetch
         fetchArticles();

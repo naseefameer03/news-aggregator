@@ -1,6 +1,6 @@
 # 📚 Laravel News Aggregator
 
-A scalable Laravel 12 application that **aggregates articles** from multiple external news APIs (e.g., NewsAPI, NYTimes), stores them locally, and exposes **RESTful API endpoints** for filtered, paginated article access.
+A scalable Laravel 12 application that **aggregates articles** from multiple external news APIs (e.g., NewsAPI, NYTimes, The Guardian), stores them locally, and exposes **RESTful API endpoints** for filtered, paginated article access. News from external APIs are fetched automatically every 30 minutes.
 
 Built with a focus on **clean architecture**, **SOLID principles**, and **DRY coding practices**.
 
@@ -33,6 +33,7 @@ app/
 ├── Http/Requests/SearchArticlesRequest.php     # Validates filters
 ├── Http/Resources/ArticleResource.php          # Transforms response data
 └── Models/Article.php                          # Article model
+└── Filters/ArticleFilter.php                   # Filters
 ```
 
 ---
@@ -89,11 +90,16 @@ php artisan schedule:work
 You can also trigger manually:
 
 ```bash
-php artisan articles:fetch
+php artisan app:fetch-articles-command
+
+Since jobs are processed using the database queue, also run:
+
+```bash
+php artisan queue:work
+```
 ```
 
 ---
-
 ## 🔍 API Endpoints
 
 | Method | URI           | Description                          |
@@ -102,17 +108,26 @@ php artisan articles:fetch
 
 ### 🔎 Query Parameters
 
-- `q` - Search by title
+- `title` - Search by title
 - `source` - Filter by source
 - `category` - Filter by category
 - `author` - Filter by author
+- `date` - Filter by published date
 
----
+#### 📝 Example Request
+
+Fetch articles from NYTimes in the "World" category by author "John Doe":
+
+```
+GET /api/articles?source=NYTimes&category=World&author=John%20Doe
+```
 
 ## 📤 Example Response
 
 ```json
 {
+  "success": true,
+  "message": "Articles retrieved successfully.",
   "data": [
     {
       "id": "9f81491a-758d-4d77-9cbe-1476ec4bafc7",
@@ -127,7 +142,9 @@ php artisan articles:fetch
   ],
   "meta": {
     "current_page": 1,
-    "total": 25
+    "last_page": 5,
+    "per_page": 9,
+    "total": 40
   }
 }
 ```
