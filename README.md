@@ -91,12 +91,12 @@ You can also trigger manually:
 
 ```bash
 php artisan app:fetch-articles-command
+```
 
 Since jobs are processed using the database queue, also run:
 
 ```bash
 php artisan queue:work
-```
 ```
 
 ---
