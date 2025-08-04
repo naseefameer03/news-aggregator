@@ -41,11 +41,27 @@
     <div class="container py-5">
         <h2 class="mb-4 text-center">Latest News Articles</h2>
 
-        <div class="row mb-4">
-            <div class="col-md-8 offset-md-2">
-                <input type="text" id="searchInput" class="form-control search-box" placeholder="Search by title, author, category, or source...">
+
+        <form id="filterForm" class="row mb-4 g-3 align-items-end justify-content-center">
+            <div class="col-md-3">
+                <input type="text" id="titleInput" class="form-control search-box" placeholder="Search by title...">
             </div>
-        </div>
+            <div class="col-md-2">
+                <input type="text" id="authorInput" class="form-control search-box" placeholder="Author">
+            </div>
+            <div class="col-md-2">
+                <input type="text" id="sourceInput" class="form-control search-box" placeholder="Source">
+            </div>
+            <div class="col-md-2">
+                <input type="text" id="categoryInput" class="form-control search-box" placeholder="Category">
+            </div>
+            <div class="col-md-2">
+                <input type="date" id="dateInput" class="form-control search-box" placeholder="Date">
+            </div>
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-primary w-100">Filter</button>
+            </div>
+        </form>
 
         <div class="row" id="articlesContainer">
             <!-- Articles will be rendered here -->
@@ -59,16 +75,47 @@
     </div>
 
     <script>
+
         let currentPage = 1;
         let lastPage = 1;
-        let currentQuery = '';
+        let currentFilters = {
+            title: '',
+            author: '',
+            source: '',
+            category: '',
+            date: ''
+        };
 
-        async function fetchArticles(query = '', page = 1) {
-            currentQuery = query;
-            const res = await fetch(`/api/articles?q=${encodeURIComponent(query)}&page=${page}`);
-            const data = await res.json();
-            renderArticles(data.data);
-            setupPagination(data.meta);
+        function getFilterParams() {
+            return {
+                title: document.getElementById('titleInput').value.trim(),
+                author: document.getElementById('authorInput').value.trim(),
+                source: document.getElementById('sourceInput').value.trim(),
+                category: document.getElementById('categoryInput').value.trim(),
+                date: document.getElementById('dateInput').value
+            };
+        }
+
+        async function fetchArticles(page = 1) {
+            currentPage = page;
+            const filters = getFilterParams();
+            currentFilters = { ...filters };
+            const params = new URLSearchParams();
+            if (filters.title) params.append('title', filters.title);
+            if (filters.author) params.append('author', filters.author);
+            if (filters.source) params.append('source', filters.source);
+            if (filters.category) params.append('category', filters.category);
+            if (filters.date) params.append('date', filters.date);
+            params.append('page', page);
+            const res = await fetch(`/api/articles?${params.toString()}`);
+            const response = await res.json();
+            if (!response.success) {
+                renderArticles([]);
+                setupPagination({ current_page: 1, last_page: 1 });
+                return;
+            }
+            renderArticles(response.data);
+            setupPagination(response.meta);
         }
 
         function renderArticles(articles) {
@@ -114,10 +161,15 @@
             }
         }
 
-        document.getElementById('searchInput').addEventListener('input', function(e) {
-            const query = e.target.value;
-            fetchArticles(query, 1);
+        document.getElementById('filterForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            fetchArticles(1);
         });
+
+        // Optional: allow instant filtering on input change (uncomment if desired)
+        // ['titleInput','authorInput','sourceInput','categoryInput','dateInput'].forEach(id => {
+        //     document.getElementById(id).addEventListener('input', () => fetchArticles(1));
+        // });
 
         // Initial fetch
         fetchArticles();
