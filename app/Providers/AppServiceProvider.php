@@ -11,7 +11,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(\App\Services\Contracts\NewsSourceInterface::class, function ($app, $params) {
+            // Optionally, you can resolve a specific service by $params['service']
+            return $app->make($params['service'] ?? \App\Services\NewsAPIService::class);
+        });
     }
 
     /**
