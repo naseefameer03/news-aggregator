@@ -12,7 +12,7 @@ class ArticleController extends Controller
 {
     public function index(SearchArticlesRequest $request)
     {
-        $query = Article::query();
+    $query = Article::query(); // Add ->with() here if there are relationships to eager load
         $filter = new ArticleFilter();
         $articles = $filter->apply($query, $request)
             ->orderBy('published_at', 'desc')

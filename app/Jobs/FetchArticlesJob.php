@@ -6,6 +6,8 @@ use App\Repositories\ArticleRepository;
 use App\Services\NewsAPIService;
 use App\Services\NYTimesService;
 use App\Services\TheGuardianAPIService;
+use App\Services\Contracts\NewsSourceInterface;
+use App\DTO\ArticleDTO;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
@@ -47,7 +49,8 @@ class FetchArticlesJob implements ShouldQueue
                 $articles = $service->fetchArticles();
 
                 foreach ($articles as $articleData) {
-                    $repository->storeOrUpdate($articleData);
+                    $dto = new ArticleDTO($articleData);
+                    $repository->storeOrUpdate($dto);
                 }
 
                 Log::info("Fetched and stored articles from " . class_basename($serviceClass));

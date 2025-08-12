@@ -16,32 +16,32 @@ class NYTimesService implements NewsSourceInterface
         $this->apiKey  = config('services.nytimes.key');
     }
 
-    public function fetchArticles(): array
+    public function fetchArticles(array $params = []): array
     {
-        $endpoint = "{$this->baseUrl}/home.json";
-
-        $response = Http::get($endpoint, [
-            'api-key' => $this->apiKey
-        ]);
-
-        if (!$response->successful()) {
-            return [];
-        }
-
-        $articles = $response->json('results');
-        $articles = array_slice($articles, 0, 10);
-
-        return collect($articles)->map(function ($item) {
-            return [
-                'title'        => $item['title'] ?? null,
-                'content'      => $item['abstract'] ?? null,
-                'source'       => 'NYTimes',
-                'category'     => $item['section'] ?? null,
-                'author'       => $item['byline'] ?? 'Unknown',
-                'url'          => $item['url'] ?? null,
-                'published_at' => isset($item['published_date']) ? date('Y-m-d H:i:s', strtotime($item['published_date'])) : now(),
-                'api_source'   => 'NYTimes',
+        $cacheKey = 'nytimes_articles_' . md5(json_encode($params));
+        return cache()->remember($cacheKey, 300, function () use ($params) {
+            $endpoint = "{$this->baseUrl}/home.json";
+            $query = [
+                'api-key' => $this->apiKey
             ];
-        })->toArray();
+            $response = Http::get($endpoint, $query);
+            if (!$response->successful()) {
+                return [];
+            }
+            $articles = $response->json('results');
+            $articles = array_slice($articles, 0, $params['pageSize'] ?? 10);
+            return collect($articles)->map(function ($item) {
+                return [
+                    'title'        => $item['title'] ?? null,
+                    'content'      => $item['abstract'] ?? null,
+                    'source'       => 'NYTimes',
+                    'category'     => $item['section'] ?? null,
+                    'author'       => $item['byline'] ?? 'Unknown',
+                    'url'          => $item['url'] ?? null,
+                    'published_at' => isset($item['published_date']) ? date('Y-m-d H:i:s', strtotime($item['published_date'])) : now(),
+                    'api_source'   => 'NYTimes',
+                ];
+            })->toArray();
+        });
     }
 }

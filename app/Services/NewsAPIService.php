@@ -16,29 +16,34 @@ class NewsAPIService implements NewsSourceInterface
         $this->apiKey  = config('services.newsapi.key');
     }
 
-    public function fetchArticles(): array
+    public function fetchArticles(array $params = []): array
     {
-        $response = Http::get("{$this->baseUrl}/top-headlines", [
-            'apiKey' => $this->apiKey,
-            'country' => 'us',
-            'pageSize' => 10,
-        ]);
-
-        if (!$response->successful()) {
-            return [];
-        }
-
-        return collect($response->json('articles'))->map(function ($item) {
-            return [
-                'title'        => $item['title'] ?? null,
-                'content'      => $item['description'] ?? null,
-                'source'       => $item['source']['name'] ?? 'NewsAPI',
-                'category'     => NULL,
-                'author'       => $item['author'] ?? 'Unknown',
-                'url'          => $item['url'] ?? null,
-                'published_at' => isset($item['publishedAt']) ? date('Y-m-d H:i:s', strtotime($item['publishedAt'])) : now(),
-                'api_source'   => 'NewsAPI',
+        $cacheKey = 'newsapi_articles_' . md5(json_encode($params));
+        return cache()->remember($cacheKey, 300, function () use ($params) {
+            $query = [
+                'apiKey' => $this->apiKey,
+                'country' => $params['country'] ?? 'us',
+                'pageSize' => $params['pageSize'] ?? 10,
             ];
-        })->toArray();
+            if (!empty($params['category'])) {
+                $query['category'] = $params['category'];
+            }
+            $response = Http::get("{$this->baseUrl}/top-headlines", $query);
+            if (!$response->successful()) {
+                return [];
+            }
+            return collect($response->json('articles'))->map(function ($item) {
+                return [
+                    'title'        => $item['title'] ?? null,
+                    'content'      => $item['description'] ?? null,
+                    'source'       => $item['source']['name'] ?? 'NewsAPI',
+                    'category'     => $item['category'] ?? null,
+                    'author'       => $item['author'] ?? 'Unknown',
+                    'url'          => $item['url'] ?? null,
+                    'published_at' => isset($item['publishedAt']) ? date('Y-m-d H:i:s', strtotime($item['publishedAt'])) : now(),
+                    'api_source'   => 'NewsAPI',
+                ];
+            })->toArray();
+        });
     }
 }

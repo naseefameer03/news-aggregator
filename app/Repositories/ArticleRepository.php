@@ -2,18 +2,20 @@
 
 namespace App\Repositories;
 
+
 use App\Models\Article;
+use App\DTO\ArticleDTO;
 
 class ArticleRepository
 {
     /**
      * Store or update an article to avoid duplicates.
      */
-    public function storeOrUpdate(array $data): void
+    public function storeOrUpdate(ArticleDTO $dto): void
     {
         Article::updateOrCreate(
-            ['url' => $data['url']], // unique identifier
-            $data
+            ['url' => $dto->url], // unique identifier
+            $dto->toArray()
         );
     }
 }
